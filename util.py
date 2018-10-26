@@ -3,13 +3,7 @@ import numpy as np
 from copy import deepcopy
 from PIL import Image
 
-def load_indian_pines():
-    data_path = None
-    gt_path = None
-
-    
-    data_path = "Indian_pines.mat"
-    gt_path = "Indian_pines_gt.mat"
+def load_mat(data_path, gt_path):
     
     mat = scipy.io.loadmat(data_path)
     data = mat['indian_pines']
