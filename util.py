@@ -3,6 +3,53 @@ import numpy as np
 from copy import deepcopy
 from PIL import Image
 
+import numpy as np
+import os
+from multiprocessing import Pool
+from tqdm import tqdm
+import logging
+
+
+def extract_patches(data, ground_truth, window_size):
+    logger = logging.getLogger(__name__)
+    Xdim, Ydim, bands = data.shape
+    
+    patches = np.empty([1, window_size, window_size, bands])
+    labels = []
+
+    progress = tqdm(total=(Xdim*Ydim), desc="Spawning tasks") 
+    def add_patch(result):
+        nonlocal patches
+        nonlocal labels
+        nonlocal progress
+        progress.update(1)
+        patch, label = result
+        patch = np.array([patch])
+        patches = np.concatenate((patches, patch), axis=0)
+        labels.append(label)
+
+    with Pool(os.cpu_count()) as pool:
+        with tqdm(total=(Xdim*Ydim), desc="Spawning tasks") as pbar:
+            for x in range(Xdim):
+                for y in range(Ydim):
+                    pool.apply_async(
+                        extract_patch,
+                        (data, x, y, window_size, ground_truth[x,y]),
+                        callback=add_patch
+                    )
+                    pbar.update(1)
+                
+                
+        pool.close()
+        pool.join()
+
+    logger.info("Number of patches found: {}".format(len(patches)))
+    return patches, labels
+
+def extract_patch(data, x, y, window_size, label):
+    return np.zeros([window_size, window_size, data.shape[2]]), label
+
+
 def load_mat(data_path, gt_path):
     
     mat = scipy.io.loadmat(data_path)
