@@ -10,7 +10,11 @@ from tqdm import tqdm
 import logging
 import sys
 
-
+def patch_generator(data, Xdim, Ydim, window_size, ground_truth):
+    for x in range(Xdim):
+        for y in range(Ydim):
+            yield data, x, y, window_size, ground_truth[x, y]
+                
 def extract_patches(data, ground_truth, window_size, maxPatches = None):
     logger = logging.getLogger(__name__)
     Xdim, Ydim, bands = data.shape
@@ -21,51 +25,23 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
     # init patches and labels
     patches = np.empty([1, window_size, window_size, bands])
     labels = []
-    # init progress bar
-    progress = 0
-    #########
-    # Function to add a patch
-    # to the list of patches
-    ########
-    
-    def add_patch(result):
-        nonlocal patches
-        nonlocal labels
-        nonlocal progress
-        nonlocal num_patches
-        progress += 1
-        sys.stdout.write("{}/{}  {:.2f}% \r\n".format(progress, num_patches, progress / num_patches))
-        sys.stdout.flush()
-        patch, label = result
-        patch = np.array([patch])
-        patches = np.concatenate((patches, patch), axis=0)
-        labels.append(label)
 
     ########
     # Spawn Pool
     ########
-    num_patches_processed = 0
-    with Pool(os.cpu_count()) as pool:
-        with tqdm(total=num_patches, desc="Spawning tasks") as pbar:
-            for x in range(Xdim):
-                for y in range(Ydim):
-                    # check for maxPatches
-                    if num_patches_processed >= num_patches:
-                        logger.debug("Reached maxPatches")
-                        break
-                    # give to workers
-                    pool.apply_async(
-                        extract_patch,
-                        (data, x, y, window_size, ground_truth[x,y]),
-                        callback=add_patch
-                    )
-                    num_patches_processed += 1
-                    pbar.update(1)
-                # check for maxPatches
-                if num_patches_processed >= num_patches:
-                    break
-        pool.close()
-        pool.join()
+    iterable = [x for x in patch_generator(data, Xdim, Ydim, window_size, ground_truth)]
+    iterable = iterable[:num_patches]
+    chunk_size = len(iterable) // os.cpu_count()
+    with tqdm(total=len(iterable), desc="Extracting patches") as pbar:
+        with Pool(os.cpu_count()) as pool:
+            for result in pool.imap_unordered(extract_patch, iterable, chunksize=chunk_size):
+                pbar.update(1)
+                patch, label = result
+                patch = np.array([patch])
+                patches = np.concatenate((patches, patch), axis=0)
+                labels.append(label)
+            pool.close()
+            pool.join()
     # throw away the first patch
     patches = patches[1:]
     # convert to numpy categorical
@@ -75,7 +51,8 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
     logger.info("Number of patches found: {}".format(len(patches)))
     return patches, labels
 
-def extract_patch(data, x, y, window_size, label):
+def extract_patch(params):
+    data, x, y, window_size, label = params
     return np.zeros([window_size, window_size, data.shape[2]]), label
 
 
