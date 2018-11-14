@@ -2,7 +2,7 @@ import scipy.io
 import numpy as np
 from copy import deepcopy
 from PIL import Image
-
+import keras
 import numpy as np
 import os
 from multiprocessing import Pool
@@ -10,14 +10,19 @@ from tqdm import tqdm
 import logging
 
 
-def extract_patches(data, ground_truth, window_size):
+def extract_patches(data, ground_truth, window_size, maxPatches = None):
     logger = logging.getLogger(__name__)
     Xdim, Ydim, bands = data.shape
-    
+
+    # init patches and labels
     patches = np.empty([1, window_size, window_size, bands])
     labels = []
-
-    progress = tqdm(total=(Xdim*Ydim), desc="Spawning tasks") 
+    # init progress bar
+    progress = tqdm(total=min((Xdim*Ydim), maxPatches), desc="Getting patches")
+    #########
+    # Function to add a patch
+    # to the list of patches
+    ########
     def add_patch(result):
         nonlocal patches
         nonlocal labels
@@ -28,21 +33,36 @@ def extract_patches(data, ground_truth, window_size):
         patches = np.concatenate((patches, patch), axis=0)
         labels.append(label)
 
+    ########
+    # Spawn Pool
+    ########
+    num_patches = 0
     with Pool(os.cpu_count()) as pool:
-        with tqdm(total=(Xdim*Ydim), desc="Spawning tasks") as pbar:
+        with tqdm(total=min((Xdim*Ydim), maxPatches), desc="Spawning tasks") as pbar:
             for x in range(Xdim):
                 for y in range(Ydim):
+                    # check for maxPatches
+                    if maxPatches is not None and num_patches >= maxPatches:
+                        logger.debug("Reached maxPatches")
+                        break
+                    # give to workers
                     pool.apply_async(
                         extract_patch,
                         (data, x, y, window_size, ground_truth[x,y]),
                         callback=add_patch
                     )
+                    num_patches += 1
                     pbar.update(1)
-                
-                
+                # check for maxPatches
+                if maxPatches is not None and num_patches >= maxPatches:
+                    break
         pool.close()
         pool.join()
-
+    # throw away the first patch
+    patches = patches[1:]
+    # convert to numpy categorical
+    labels = np.array(labels)
+    labels = keras.utils.to_categorical(labels)
     logger.info("Number of patches found: {}".format(len(patches)))
     return patches, labels
 

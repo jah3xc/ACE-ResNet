@@ -3,6 +3,7 @@ import logging
 from util import load_mat, extract_patches
 from pathlib import Path
 from cnn import train_model
+import json
 
 def main():
     args = init()
@@ -21,13 +22,15 @@ def main():
     # Extract Patches
     ############
     window_size = args["windowSize"]
-    samples, labels = extract_patches(data, ground_truth, window_size)
-
+    maxPatches = args["maxPatches"] if "maxPatches" in args else None
+    samples, labels = extract_patches(data, ground_truth, window_size, maxPatches = maxPatches)
+    logger.info("Extracted {} patches".format(len(samples)))
 
     ###########
     # Train the Network
     ###########
-    model = train_model(samples, labels)
+    trainParams = args["training"] if "training" in args else {}
+    model = train_model(samples, labels, window_size, trainParams)
 
 
 def init():
@@ -40,20 +43,18 @@ def init():
     }
 
     parser = argparse.ArgumentParser()
-    required = parser.add_argument_group()
-    required.add_argument("-d","--dataset", required = True)
-    required.add_argument("-g", "--groundTruth", required = True)
-    optional = parser.add_argument_group()
-    optional.add_argument("--ace", action="store_true")
-    optional.add_argument("-w", "--windowSize", default=11)
-    optional.add_argument("-l", "--log", choices=levelMap.keys(), default="ERROR")
+    parser.add_argument("configFile", type=str)
+    parser.add_argument("-l", "--log", choices=levelMap.keys(), default="ERROR")
 
     args = vars(parser.parse_args())
 
     logging.basicConfig(level=args["log"])
     del args["log"]
 
-    return args
+    filename = args["configFile"]
+    params = json.load(open(filename))
+
+    return params
 
 
 if __name__ == "__main__":

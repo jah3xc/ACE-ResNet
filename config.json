@@ -1,0 +1,13 @@
+{
+  "dataset": "data/Indian_pines.mat",
+  "groundTruth": "data/Indian_pines_gt.mat",
+  "ace": false,
+  "windowSize": 11,
+  "maxPatches": 100,
+  "training": {
+    "batch_size": 8,
+    "epochs": 5,
+    "use_multiprocessing": true,
+    "workers": 8
+  }
+}

@@ -12,6 +12,7 @@ tqdm = "*"
 numpy = "*"
 scipy = "*"
 tensorflow = "*"
+keras = "*"
 
 
 [dev-packages]
