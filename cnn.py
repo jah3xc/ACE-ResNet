@@ -13,11 +13,11 @@ def build_model(num_classes, num_bands, window_size):
     # Define Architecture
     ##########
     model.add(tf.layers.Conv2D(32, (3, 3), input_shape=(window_size, window_size, num_bands)))
-    # model.add(tf.layers.Conv2D(32, (3, 3)))
-    # model.add(tf.layers.MaxPooling2D((2,2), 2)
+    model.add(tf.layers.Conv2D(32, (3, 3)))
+    model.add(tf.layers.MaxPooling2D((2,2), 2))
     model.add(tf.keras.layers.Flatten())
-    # model.add(tf.layers.Dense(64, activation="relu"))
     model.add(tf.layers.Dense(num_classes, activation="softmax"))
+    # model.add(tf.layers.Dense(num_classes, activation="softmax"))
 
     return model
 
@@ -25,9 +25,9 @@ def build_model(num_classes, num_bands, window_size):
 def train_model(samples, labels, window_size, train_args):
 
     logger = logging.getLogger(__name__)
-    num_classes = len(np.unique(labels))
+    num_classes = labels.shape[1]
     num_samples, Xdim, Ydim, num_bands = samples.shape
-    logger.debug("Found {} bands".format(num_bands))
+    logger.info("Found {} samples with {} bands belonging to {} classes".format(num_samples, num_bands, num_classes))
 
     ###########
     # Build the Model
@@ -42,6 +42,6 @@ def train_model(samples, labels, window_size, train_args):
     ############
     # Train the Model
     ############
-    model.fit(samples, labels)
+    model.fit(samples, labels, **train_args)
 
     return model

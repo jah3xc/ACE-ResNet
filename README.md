@@ -10,6 +10,6 @@ pipenv install --skip-lock
 ### Usage
 To run ACENet: 
 ```
-python3 ACENet [data_file] [ground_truth] 
+python3 ACENet [config file]
 ```
-where `data_file` and `ground_truth` are hyperspectral `.mat` files. 
+where `config file` is a JSON file that has the needed keys

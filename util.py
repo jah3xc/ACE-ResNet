@@ -63,6 +63,7 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
     # convert to numpy categorical
     labels = np.array(labels)
     labels = keras.utils.to_categorical(labels)
+    logger.debug("Shape of Labels: {}".format(labels.shape))
     logger.info("Number of patches found: {}".format(len(patches)))
     return patches, labels
 
