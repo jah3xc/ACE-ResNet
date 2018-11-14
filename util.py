@@ -34,7 +34,7 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
         nonlocal progress
         nonlocal num_patches
         progress += 1
-        sys.stdout.write("{}/{}  {:.2f}%".format(progress, num_patches, progress / num_patches))
+        sys.stdout.write("{}/{}  {:.2f}% \r\n".format(progress, num_patches, progress / num_patches))
         sys.stdout.flush()
         patch, label = result
         patch = np.array([patch])
