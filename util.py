@@ -13,12 +13,15 @@ import logging
 def extract_patches(data, ground_truth, window_size, maxPatches = None):
     logger = logging.getLogger(__name__)
     Xdim, Ydim, bands = data.shape
-
+    if maxPatches is None:
+        num_patches = Xdim * Ydim
+    else:
+        num_patches = maxPatches
     # init patches and labels
     patches = np.empty([1, window_size, window_size, bands])
     labels = []
     # init progress bar
-    progress = tqdm(total=min((Xdim*Ydim), maxPatches), desc="Getting patches")
+    progress = tqdm(total=num_patches, desc="Getting patches")
     #########
     # Function to add a patch
     # to the list of patches
@@ -36,13 +39,13 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
     ########
     # Spawn Pool
     ########
-    num_patches = 0
+    num_patches_processed = 0
     with Pool(os.cpu_count()) as pool:
-        with tqdm(total=min((Xdim*Ydim), maxPatches), desc="Spawning tasks") as pbar:
+        with tqdm(total=num_patches, desc="Spawning tasks") as pbar:
             for x in range(Xdim):
                 for y in range(Ydim):
                     # check for maxPatches
-                    if maxPatches is not None and num_patches >= maxPatches:
+                    if num_patches_processed >= num_patches:
                         logger.debug("Reached maxPatches")
                         break
                     # give to workers
@@ -51,10 +54,10 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
                         (data, x, y, window_size, ground_truth[x,y]),
                         callback=add_patch
                     )
-                    num_patches += 1
+                    num_patches_processed += 1
                     pbar.update(1)
                 # check for maxPatches
-                if maxPatches is not None and num_patches >= maxPatches:
+                if num_patches_processed >= num_patches:
                     break
         pool.close()
         pool.join()
