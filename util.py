@@ -8,6 +8,7 @@ import os
 from multiprocessing import Pool
 from tqdm import tqdm
 import logging
+import sys
 
 
 def extract_patches(data, ground_truth, window_size, maxPatches = None):
@@ -21,16 +22,20 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
     patches = np.empty([1, window_size, window_size, bands])
     labels = []
     # init progress bar
-    progress = tqdm(total=num_patches, desc="Getting patches")
+    progress = 0
     #########
     # Function to add a patch
     # to the list of patches
     ########
+    
     def add_patch(result):
         nonlocal patches
         nonlocal labels
         nonlocal progress
-        progress.update(1)
+        nonlocal num_patches
+        progress += 1
+        sys.stdout.write("{}/{}  {:.2f}%".format(progress, num_patches, progress / num_patches))
+        sys.stdout.flush()
         patch, label = result
         patch = np.array([patch])
         patches = np.concatenate((patches, patch), axis=0)
