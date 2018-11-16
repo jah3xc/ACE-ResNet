@@ -5,10 +5,11 @@
   "windowSize": 11,
   "maxPatches": 300,
   "training": {
-    "batch_size": 8,
-    "epochs": 50,
+    "batch_size": 16,
+    "epochs": 100,
     "use_multiprocessing": true,
     "workers": 8,
-    "validation_split": 0.2
+    "validation_split": 0.2,
+    "shuffle": true
   }
 }
