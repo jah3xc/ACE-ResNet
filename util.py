@@ -11,8 +11,17 @@ import logging
 import sys
 
 def patch_generator(data, Xdim, Ydim, window_size, ground_truth):
-    for x in range(Xdim):
-        for y in range(Ydim):
+    # calc valid values
+    step = window_size // 2
+    min_i = min_j = step
+    max_i, max_j = Xdim - step - 1, Ydim - step - 1
+
+    x_range = np.arange(min_i, max_i)
+    y_range = np.arange(min_j, max_j)
+    np.random.shuffle(x_range)
+    np.random.shuffle(y_range)
+    for x in x_range:
+        for y in y_range:
             yield data, x, y, window_size, ground_truth[x, y]
                 
 def extract_patches(data, ground_truth, window_size, maxPatches = None):
@@ -29,7 +38,7 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
     ########
     # Spawn Pool
     ########
-    iterable = [x for x in patch_generator(data, Xdim, Ydim, window_size, ground_truth)]
+    iterable = list(patch_generator(data, Xdim, Ydim, window_size, ground_truth))
     iterable = iterable[:num_patches]
     chunk_size = len(iterable) // os.cpu_count()
     with tqdm(total=len(iterable), desc="Extracting patches") as pbar:
@@ -49,12 +58,16 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
     labels = keras.utils.to_categorical(labels)
     logger.debug("Shape of Labels: {}".format(labels.shape))
     logger.info("Number of patches found: {}".format(len(patches)))
+
     return patches, labels
+
 
 def extract_patch(params):
     data, x, y, window_size, label = params
-    return np.zeros([window_size, window_size, data.shape[2]]), label
-
+    Xdim, Ydim, numBands = data.shape
+    offset = window_size // 2
+    window = data[(x - offset):(x + offset + 1), (y - offset):(y + offset + 1),:]
+    return window, label
 
 def load_mat(data_path, gt_path):
     
