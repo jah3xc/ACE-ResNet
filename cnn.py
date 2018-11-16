@@ -37,7 +37,7 @@ def train_model(samples, labels, window_size, train_args):
     ##########
     # Compile the model
     ##########
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=tf.keras.optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9), loss='categorical_crossentropy', metrics=['accuracy'])
 
     ############
     # Train the Model
