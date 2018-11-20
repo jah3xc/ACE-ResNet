@@ -2,8 +2,9 @@
   "dataset": "data/Indian_pines.mat",
   "groundTruth": "data/Indian_pines_gt.mat",
   "ace": false,
-  "windowSize": 11,
+  "windowSize": 5,
   "maxPatches": 500,
+  "stride": 5,
   "building": {
     "num_layers": 20,
     "num_filters": 128,

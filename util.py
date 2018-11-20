@@ -10,21 +10,21 @@ from tqdm import tqdm
 import logging
 import sys
 
-def patch_generator(data, Xdim, Ydim, window_size, ground_truth):
+def patch_generator(data, Xdim, Ydim, window_size, stride, ground_truth):
     # calc valid values
     step = window_size // 2
     min_i = min_j = step
     max_i, max_j = Xdim - step - 1, Ydim - step - 1
 
-    x_range = np.arange(min_i, max_i)
-    y_range = np.arange(min_j, max_j)
+    x_range = np.arange(min_i, max_i, stride)
+    y_range = np.arange(min_j, max_j, stride)
     np.random.shuffle(x_range)
     np.random.shuffle(y_range)
     for x in x_range:
         for y in y_range:
             yield data, x, y, window_size, ground_truth[x, y]
                 
-def extract_patches(data, ground_truth, window_size, maxPatches = None):
+def extract_patches(data, ground_truth, window_size, stride, maxPatches = None):
     logger = logging.getLogger(__name__)
     Xdim, Ydim, bands = data.shape
     if maxPatches is None:
@@ -38,7 +38,7 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
     ########
     # Spawn Pool
     ########
-    iterable = list(patch_generator(data, Xdim, Ydim, window_size, ground_truth))
+    iterable = list(patch_generator(data, Xdim, Ydim, window_size, stride, ground_truth))
     iterable = iterable[:num_patches]
     chunk_size = len(iterable) // os.cpu_count()
     with tqdm(total=len(iterable), desc="Extracting patches") as pbar:

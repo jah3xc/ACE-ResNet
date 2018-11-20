@@ -4,6 +4,7 @@ from keras.layers import Convolution2D, Activation, MaxPooling2D, Flatten, Dense
 from keras.optimizers import SGD 
 import numpy as np
 import logging
+import json
 
 def build_model(num_classes,
                 num_bands,
@@ -75,6 +76,7 @@ def train_model(samples, labels, window_size, build_args, train_args):
     # Train the Model
     ############
     print(labels)
-    model.fit(samples, labels, **train_args)
+    train_results = model.fit(samples, labels, **train_args)
+    json.dump(train_results.history, open("train_results.json", 'w'))
 
     return model
