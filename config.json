@@ -3,12 +3,16 @@
   "groundTruth": "data/Indian_pines_gt.mat",
   "ace": false,
   "windowSize": 11,
-  "maxPatches": 300,
+  "maxPatches": 500,
+  "building": {
+    "num_layers": 20,
+    "num_filters": 128,
+    "kernel_size": 3,
+    "pooling_size": 2
+  },
   "training": {
-    "batch_size": 16,
-    "epochs": 100,
-    "use_multiprocessing": true,
-    "workers": 8,
+    "batch_size": 32,
+    "epochs": 50,
     "validation_split": 0.2,
     "shuffle": true
   }

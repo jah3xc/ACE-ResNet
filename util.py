@@ -47,6 +47,7 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
                 pbar.update(1)
                 patch, label = result
                 patch = np.array([patch])
+                patch = normalize_patch(patch)
                 patches = np.concatenate((patches, patch), axis=0)
                 labels.append(label)
             pool.close()
@@ -61,6 +62,18 @@ def extract_patches(data, ground_truth, window_size, maxPatches = None):
 
     return patches, labels
 
+def normalize_patch(x, range = 1):
+        """
+        Standardize the sample in the range 
+        :param x: the sample
+        :param range: the range within to normalize
+        :return: normalized sample
+        """
+        img_f = x.astype('float')
+        max_val = np.max(x)
+        min_val = np.min(x)
+        img_ac = (img_f - min_val) / (max_val - min_val) * 2. * range - range
+        return img_ac
 
 def extract_patch(params):
     data, x, y, window_size, label = params

@@ -23,14 +23,15 @@ def main():
     ############
     window_size = args["windowSize"]
     maxPatches = args["maxPatches"] if "maxPatches" in args else None
-    samples, labels = extract_patches(data, ground_truth, window_size, maxPatches = maxPatches)
+    samples, labels = extract_patches(data, ground_truth, window_size, maxPatches=maxPatches)
     logger.info("Extracted {} patches".format(len(samples)))
 
     ###########
     # Train the Network
     ###########
     trainParams = args["training"] if "training" in args else {}
-    model = train_model(samples, labels, window_size, trainParams)
+    buildParams = args["building"] if "building" in args else {}
+    model = train_model(samples, labels, window_size, buildParams, trainParams)
 
 
 def init():

@@ -1,35 +1,61 @@
 
-import tensorflow as tf
+from keras.models import Sequential
+from keras.layers import Convolution2D, Activation, MaxPooling2D, Flatten, Dense
+from keras.optimizers import SGD 
 import numpy as np
 import logging
 
-def build_model(num_classes, num_bands, window_size):
-    #########
-    # define sequential model
-    ##########
-    model = tf.keras.Sequential()
+def build_model(num_classes,
+                num_bands,
+                window_size,
+                num_layers = 3,
+                num_filters = 64,
+                kernel_size = 3,
+                pooling_size = 2):
 
-    ##########
-    # Define Architecture
-    ##########
-    model.add(
-        tf.keras.layers.Conv2D(32, (3, 3), input_shape=(window_size, window_size, num_bands))
-    )
-    model.add(tf.keras.layers.Activation("relu"))
-    model.add(
-        tf.keras.layers.Conv2D(32, (3, 3))
-    )
-    model.add(tf.keras.layers.Activation("relu"))
-    model.add(tf.keras.layers.MaxPooling2D((2,2)))
-    model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dense(num_classes))
-    model.add(tf.keras.layers.Activation("softmax"))
+    # create model object
+    model = Sequential()
+    # is it the first layer
+    first_layer = True
+    # for each layer
+    for _ in range(num_layers):
+        # create convolutional layer
+        if first_layer:
+            conv_layer = Convolution2D(
+                num_filters, (kernel_size, kernel_size),
+                activation="relu",
+                input_shape=(window_size, window_size, num_bands),
+                padding="same")
+            first_layer = False
+        else:
+            conv_layer = Convolution2D(
+                num_filters, (kernel_size, kernel_size),
+                activation="relu",
+                padding="same")
+        ## add convolutional layer
+        model.add(conv_layer)
 
+    # create pooling layer
+    pool_layer = MaxPooling2D(
+        pool_size=(pooling_size, pooling_size)
+        )
+    # add the layers to the model
+    model.add(pool_layer)
+
+    # add flattening layer
+    flat = Flatten()
+    model.add(flat)
+    # add the dense layer
+    dense = Dense(128, activation="relu")
+    model.add(dense)
+    output = Dense(num_classes, activation="softmax")
+    model.add(output)
+    # compile model
     return model
 
 
-def train_model(samples, labels, window_size, train_args):
-
+def train_model(samples, labels, window_size, build_args, train_args):
+    
     logger = logging.getLogger(__name__)
     num_classes = labels.shape[1]
     num_samples, Xdim, Ydim, num_bands = samples.shape
@@ -38,16 +64,17 @@ def train_model(samples, labels, window_size, train_args):
     ###########
     # Build the Model
     ###########
-    model = build_model(num_classes, num_bands, window_size)
+    model = build_model(num_classes, num_bands, window_size, **build_args)
 
     ##########
     # Compile the model
     ##########
-    model.compile(optimizer=tf.keras.optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9), loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True), loss='categorical_crossentropy', metrics=['accuracy'])
 
     ############
     # Train the Model
     ############
+    print(labels)
     model.fit(samples, labels, **train_args)
 
     return model
