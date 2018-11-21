@@ -2,3 +2,9 @@
 __pycache__
 .venv
 /.idea
+/paper/acenet-paper.aux
+/paper/acenet-paper.blg
+/paper/acenet-paper.pdf
+/paper/acenet-paper.synctex.gz
+/paper/acenet-paper.log
+/paper/acenet-paper.bbl

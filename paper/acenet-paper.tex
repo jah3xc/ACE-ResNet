@@ -1,0 +1,81 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1.0in]{geometry}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{cleveref}
+\usepackage{indentfirst}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage[title]{appendix}
+\usepackage{siunitx} % Required for alignment
+\usepackage{mdframed}
+
+\begin{document}
+
+	
+\begin{center}
+	\huge{Exploring the Effects of the Adaptive Cosine Estimator on Convolutional Neural Network Performance for Hyperspectral Imagery Classification} \\
+	\vspace{5mm}
+	\large{Alex Hurt}
+\end{center}
+
+%1) ABSTRACT. why care, what method did you use, what data did you explore, what did you find!
+%
+\section{Abstract}
+
+Hyperspectral Imagery (HSI) Classification is a difficult but important task in Remote Sensing.
+%
+As hyperspectral sensors become more popular, the ability to perform classification at the hyperspectral level will grow more and more important.
+%
+HSI has many challenges that other image sources (i.e. RGB) do not have, such as labeling at the pixel level rather than image level and a so-called curse of dimensionality.
+%
+In recent years, several researchers have attempted to perform HSI classification with a variety of methods.
+%
+With the rise of deep learning, one of the most popular methods for HSI classification is Convolutional Neural Networks (CNN).
+%
+While HSI have several inherent challenges, so too do Convolutional Neural Networks, and understanding the limitations of CNN is critical to building a well performing classifier.
+%
+Recently, researchers have tried several tweaks to the standard CNN to improve HSI classification performance, such as using deformable convolutions by Zhu \textit{et al.} \cite{zhu_deformable_2018}. 
+%
+Another approach was taken by Paoletti \textit{et al.}, who used a CNN combined with capsule networks for HSI classification \cite{paoletti_capsule_2018}.
+
+While numerous approaches have been taken for HSI classification, most techniques do not utilize the amount of spectral information contained in HSI when performing classification.
+%
+To that end, I will utilize a method of detection in HSI given sample object signatures, known as the Adaptive Cosine Estimator (ACE).
+%
+ACE allows detection and produces scoring at the pixel level within HSI given the signature of the objects of interest. 
+%
+In this project, I will combine the ACE technique with a CNN to produce a custom neural network architecture that involves preprocessing samples with ACE, named \textit{ACENet}.
+%
+ACENet combines the spectral classification methods of ACE with the spatial classification methods utilized by CNN to produce an architecture that can better classify HSI.
+%
+More details of this new architecture are described in Section \ref{sec:methods}.
+%
+Following the description of methods, I describe the data used for experimentation in Section \ref{sec:data} and then the design, results, and analysis of experiments in \ref{sec:experiments} before drawing final conclusions in Section \ref{sec:conclusion}.
+
+
+%2) METHODS. describe your algorithm(s). your goal, show me you KNOW it
+%
+\section{Methods}\label{sec:methods}
+
+%3) DATA. document your data
+%
+\section{Data}\label{sec:data}
+
+%4) EXPERIMENTS and RESULTS. what did you run and what did you find. Yes, document, but I want to see your ANALYSIS!
+%
+\section{Experiments}\label{sec:experiments}
+
+%5) CONCLUSIONS. summarize it folks!
+\section{Conclusion}\label{sec:conclusion}
+
+
+%%%%%%%%%%%%%%%%
+%		 REFERENCES
+%%%%%%%%%%%%%%%%%
+\newpage
+\bibliography{refs} 
+\bibliographystyle{ieeetr}
+
+
+\end{document}
