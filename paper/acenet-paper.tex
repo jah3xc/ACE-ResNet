@@ -57,10 +57,54 @@ Following the description of methods, I describe the data used for experimentati
 %2) METHODS. describe your algorithm(s). your goal, show me you KNOW it
 %
 \section{Methods}\label{sec:methods}
+To explore the effects of ACE on CNN Performance, I first move to introduce the data preprocessing that is performed prior to input to the CNN.
+%
+Since most hyperspectral datasets are labeled at the pixel label, the first step of preprocessing is to extract patches from the dataset.
+%
+To do this, parameters of window size and stride are selected and then used to extract patches of size window size by window size, and then sliding a number of pixels defined by stride.
+%
+Each patch is then normalized between 0 and 1 and fed into ACENet.
+
+The ACENet architecture has two different modes: with or without ACE.
+%
+The only difference between the two is in the non-ACE mode, each patch is fed in raw and the input size to the first convolutional layer is (w x w x b) where w is the window size and b is the number of bands in the hyperspectral dataset.
+%
+Meanwhile, the ACE mode has another step between preprocessing and the first convoutional layer known as the ACELayer.
+%
+The ACELayer uses the dataset and ground truth to calculate a mean signal for each class in the dataset.
+%
+ACE is then run on each patch with each class's mean signal as the target signal. 
+%
+The resulting matrices are concatenated to form a single input sample with shape (w x w x n) where w is the window size and n is the number of classes, which is also the input shape of the first convolutional layer.
+%
+Both modes of ACENet have the same number of samples, but the ACE enabled mode has a reduction of dimensionality due to the number of classes being less than number of bands in HSI, but also has added computation of transforming samples from HSI pixels to the concatenation of ACE results.
+
+Both ACE enabled and ACE disabled modes of ACENet have identical architectures beginning at the first convolutional layer.
+%
+The framework developed for this architecture is parameterized to allow for an arbitrary number of convolutional layers so that an optimal setting may be found for a given dataset.
+%
+Following the final convolutional layer, there is a single Max Pooling layer that feeds into a flattening layer.
+%
+Now that all feature extraction is finished, the flattened features are fed into the first fully connected layer composed of 256 units.
+%
+Next, a 25\% dropout layer is added in an attempt to add generalizability and improve cross validation performance.
+%
+Another fully connected layer follows the dropout layer before the final softmax layer for classification.
+
+
 
 %3) DATA. document your data
 %
 \section{Data}\label{sec:data}
+For this project, I chose to use the ever popular HSI benchmark dataset Indian Pines (IP) \cite{IP}.
+%
+IP is a HSI dataset composed of 220 hyperspectral bands that was collected in 1992 and has been used in a variety of research.
+%
+The dataset has shape of 144x144, and is one of few HSI datasets that has excellent pixel level ground truth data.
+%
+Use of this dataset will allow for easy comparison of this method with other methods due to the high popularity of IP.
+%
+The IP dataset is distributed as MatLab files and has 16 agricultural classes within it.
 
 %4) EXPERIMENTS and RESULTS. what did you run and what did you find. Yes, document, but I want to see your ANALYSIS!
 %
