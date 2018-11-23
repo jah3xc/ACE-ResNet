@@ -1,7 +1,41 @@
 import numpy as np
 from util import calc_cov, calc_mean
+from patches import normalize_patch as normalize
 from tqdm import tqdm
 
+def get_mean_signatures(data, ground_truth):
+    unique, counts = np.unique(ground_truth, return_counts=True)
+    _,_,bands = data.shape
+    num_classes = len(unique)
+    mean_signatures = np.empty([num_classes, bands])
+    for i, class_num, count in enumerate(zip(unique, counts)):
+        # get all pixels in this class
+        class_mask = np.where(ground_truth == i, 1, 0)
+        # multiply the mask with the data
+        masked_data = np.multiply(data, class_mask)
+        # get the mean sig
+        mean_sig = np.sum(masked_data, axis=0) / np.array([count] * len(masked_data))
+        # save it
+        mean_signatures[class_num] = normalize(mean_sig)
+    return mean_signatures
+
+def ace_transform_samples(samples, labels, data, ground_truth):
+    # get the mean sig
+    mean_signatures = get_mean_signatures(data, ground_truth)
+    # run each samples through all mean signatures
+    num_samples, Xdim, Ydim, bands = samples.shape
+    num_classes = len(np.unique(ground_truth))
+    ace_samples = np.empty([num_samples, Xdim, Ydim, num_classes])
+
+    with tqdm(total=len(samples), desc="Running ACE") as pbar:
+        for i, samp in enumerate(samples):
+            ace_samp = np.empty([Xdim, Ydim, num_classes])
+            for j, mean_sig in enumerate(mean_signatures):
+                ace_samp[:,:, j] = ACE(samp, mean_sig)
+            ace_samples[i] = ace_samp
+            pbar.update(1)
+
+    return ace_samples
 
 
 def ACE(data, s):

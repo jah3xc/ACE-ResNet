@@ -1,6 +1,6 @@
 
 from keras.models import Sequential
-from keras.layers import Convolution2D, Activation, MaxPooling2D, Flatten, Dense
+from keras.layers import Convolution2D, Activation, MaxPooling2D, Flatten, Dense, Dropout
 from keras.optimizers import SGD 
 import numpy as np
 import logging
@@ -46,6 +46,12 @@ def build_model(num_classes,
     # add flattening layer
     flat = Flatten()
     model.add(flat)
+    # add the dense layer
+    dense = Dense(256, activation="relu")
+    model.add(dense)
+    # add dropout
+    drop = Dropout(0.25)
+    model.add(drop)
     # add the dense layer
     dense = Dense(128, activation="relu")
     model.add(dense)

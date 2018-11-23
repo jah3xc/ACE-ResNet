@@ -1,8 +1,10 @@
 import argparse
 import logging
-from util import load_mat, extract_patches
+from util import load_mat
+from patches import extract_patches
 from pathlib import Path
 from cnn import train_model
+from ACE import ace_transform_samples
 import json
 
 def main():
@@ -26,6 +28,14 @@ def main():
     maxPatches = args["maxPatches"] if "maxPatches" in args else None
     samples, labels = extract_patches(data, ground_truth, window_size, stride, maxPatches=maxPatches)
     logger.info("Extracted {} patches".format(len(samples)))
+
+    ###########
+    # ACE If necessary
+    ###########
+    ACE = args["ace"]
+    if ACE:
+        samples = ace_transform_samples(samples, labels, data, ground_truth)
+    
 
     ###########
     # Train the Network
