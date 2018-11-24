@@ -110,6 +110,50 @@ The IP dataset is distributed as MatLab files and has 16 agricultural classes wi
 %
 \section{Experiments}\label{sec:experiments}
 
+In an effort to test the usability of ACENet, several experiments were run with several different parameters, both in ACE enabled and ACE disabled modes. 
+%
+The first set of experiments were done to test how stride and window size affected validation testing of CNN on HSI in general, and then another was run to explore how those same two parameters affected results with ACE enabled.
+%
+After finding ideal sets of window and stride sizes and exploring how ACE enabled CNN perform against Non-ACE enabled CNN, I investigate what the optimal number of convolutional layers is for feature extraction in HSI imagery.
+%
+All experiments are run using the IP dataset and are run using a Keras/TensorFlow software stack on a server with 4 NVIDIA Tesla V100s and 80 logical processors.
+%
+Network parameters were held constant with an initial learning rate of 0.01 and decay of 1e-6 along with a momentum of 0.9 in a Stochastic Gradient Descent (SGD) optimizer and categorical cross entropy loss function.
+% 
+
+\subsection{Varied Window and Stride Sizes}
+Due to the pixel level labeling seen in the IP dataset and the necessity of CNN to have some NxN patch of input, it is a useful task to vary the input patch size and observe how that change impacts CNN performance. 
+%
+A balance must be struck between computational complexity and context around a pixel.
+%
+If the window size is too small, then there is not enough context, and performance is hindered, while a window size too large will result in more complex calculations with higher training times and may lead to a performance hit as well depending if the chosen size contains too much context relative to the labeled pixel.
+%
+To that end, I adjust the window size $w$ from 5x5 up to 11x11 in 2x2 increments, and set the stride for each experiment to $\lfloor\frac{w}{2}\rfloor$. 
+%
+I set ACENet to run in ACE disabled mode, and use 15 convolutional layers and train for 100 epochs on 80\% of the data.
+%
+I use the remaining 20\% of as validation data.
+%
+The results of this experiment are shown in Figure \ref{figure:noace}.
+
+\begin{figure*}
+	\label{figure:noace}
+	\centering
+	\caption{ACENet results on IP after 80/20 validation split using various window and stride sizes}
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\linewidth]{ace-disabled-loss.png}
+		\caption{Training Loss}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\linewidth]{ace-disabled-valacc.png}
+		\caption{Training Loss}		
+	\end{subfigure}
+\end{figure*}
+
+\subsection{ACE Enabled vs. ACE Disabled}
+\subsection{Ideal Network Size}
+
 %5) CONCLUSIONS. summarize it folks!
 \section{Conclusion}\label{sec:conclusion}
 
