@@ -49,7 +49,7 @@ def ace_transform_samples(samples, labels, data, ground_truth):
         pool.join()
     ace_samples = ace_samples[1:]
     labels = np.array(labels)
-    return ace_samples
+    return ace_samples, labels
 
 def ace_generator(samples, labels, mean_signatures):
     for i,j in zip(samples, labels):

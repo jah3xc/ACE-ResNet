@@ -34,7 +34,7 @@ def main():
     ###########
     ACE = args["ace"]
     if ACE:
-        samples = ace_transform_samples(samples, labels, data, ground_truth)
+        samples, labels = ace_transform_samples(samples, labels, data, ground_truth)
     
 
     ###########
