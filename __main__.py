@@ -6,6 +6,7 @@ from pathlib import Path
 from cnn import train_model
 from ACE import ace_transform_samples
 import json
+import os
 
 def main():
     args = init()
@@ -33,8 +34,9 @@ def main():
     # ACE If necessary
     ###########
     ACE = args["ace"]
+    cpu_count = args["cpu_count"] if "cpu_count" in args else os.cpu_count()
     if ACE:
-        samples, labels = ace_transform_samples(samples, labels, data, ground_truth)
+        samples, labels = ace_transform_samples(samples, labels, data, ground_truth, cpu=cpu_count)
     
 
     ###########

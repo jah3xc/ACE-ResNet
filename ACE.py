@@ -28,7 +28,7 @@ def get_mean_signatures(data, ground_truth):
         mean_signatures[class_num] = normalize(mean_sig)
     return mean_signatures
 
-def ace_transform_samples(samples, labels, data, ground_truth):
+def ace_transform_samples(samples, labels, data, ground_truth, cpu = os.cpu_count()):
     logger = logging.getLogger(__name__)
     # get the mean sig
     mean_signatures = get_mean_signatures(data, ground_truth)
@@ -42,7 +42,7 @@ def ace_transform_samples(samples, labels, data, ground_truth):
     size = 1
     labels = []
     logger.info("Spawning Tasks")
-    with Pool(os.cpu_count()) as pool:
+    with Pool(cpu) as pool:
         logger.info("All tasks spawned!")
         for result in tqdm(pool.imap_unordered(transform_sample, task_list, chunksize=size), total=len(task_list), desc="Running ACE"):
             ace_sample, label = result
