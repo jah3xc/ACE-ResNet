@@ -37,7 +37,7 @@ def ace_transform_samples(samples, labels, data, ground_truth):
     
     ace_samples = np.empty([1, Xdim, Ydim, num_classes])
     task_list = list(ace_generator(samples, labels, mean_signatures))
-    size = len(task_list) // os.cpu_count()
+    size = 1
     labels = []
     with Pool(os.cpu_count()) as pool:
         for result in tqdm(pool.imap_unordered(transform_sample, task_list, chunksize=size), total=len(task_list), desc="Running ACE"):
