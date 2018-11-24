@@ -4,6 +4,7 @@ from patches import normalize_patch as normalize
 from tqdm import tqdm
 from multiprocessing import Pool
 import os
+import logging
 
 def get_mean_signatures(data, ground_truth):
     unique, counts = np.unique(ground_truth, return_counts=True)
@@ -28,6 +29,7 @@ def get_mean_signatures(data, ground_truth):
     return mean_signatures
 
 def ace_transform_samples(samples, labels, data, ground_truth):
+    logger = logging.getLogger(__name__)
     # get the mean sig
     mean_signatures = get_mean_signatures(data, ground_truth)
     # run each samples through all mean signatures
@@ -39,7 +41,9 @@ def ace_transform_samples(samples, labels, data, ground_truth):
     task_list = list(ace_generator(samples, labels, mean_signatures))
     size = 1
     labels = []
+    logger.info("Spawning Tasks")
     with Pool(os.cpu_count()) as pool:
+        logger.info("All tasks spawned!")
         for result in tqdm(pool.imap_unordered(transform_sample, task_list, chunksize=size), total=len(task_list), desc="Running ACE"):
             ace_sample, label = result
             ace_sample = np.array([ace_sample])
@@ -47,6 +51,7 @@ def ace_transform_samples(samples, labels, data, ground_truth):
             labels.append(label)
         pool.close()
         pool.join()
+    logger.info("Closed pool")
     ace_samples = ace_samples[1:]
     labels = np.array(labels)
     return ace_samples, labels
@@ -56,14 +61,15 @@ def ace_generator(samples, labels, mean_signatures):
         yield i, j, mean_signatures
 
 def transform_sample(params):
+    logger = logging.getLogger(__name__)
     sample, label, mean_signatures = params
     Xdim, Ydim, _ = sample.shape
     num_classes = len(mean_signatures)
     ace_samp = np.empty([Xdim, Ydim, num_classes])
     for j, mean_sig in enumerate(mean_signatures):
         ace_samp[:,:, j] = ACE(sample, mean_sig)
-        print("Finished for class {}".format(j))
-    print("Finished a sample!")
+        logger.debug("Finished for class {}".format(j))
+    logger.debug("Finished a sample!")
     return ace_samp, label
 
 
