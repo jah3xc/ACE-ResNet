@@ -39,7 +39,7 @@ def ace_transform_samples(samples, labels, data, ground_truth, cpu = os.cpu_coun
     
     ace_samples = np.empty([1, Xdim, Ydim, num_classes])
     task_list = list(ace_generator(samples, labels, mean_signatures))
-    size = 1
+    size = len(task_list) // os.cpu_count()
     labels = []
     logger.info("Spawning Tasks")
     with Pool(cpu) as pool:
