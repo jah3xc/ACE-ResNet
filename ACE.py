@@ -2,19 +2,27 @@ import numpy as np
 from util import calc_cov, calc_mean
 from patches import normalize_patch as normalize
 from tqdm import tqdm
+from multiprocessing import Pool
+import os
 
 def get_mean_signatures(data, ground_truth):
     unique, counts = np.unique(ground_truth, return_counts=True)
-    _,_,bands = data.shape
+    Xdim, Ydim, bands = data.shape
     num_classes = len(unique)
     mean_signatures = np.empty([num_classes, bands])
-    for i, class_num, count in enumerate(zip(unique, counts)):
+    for class_num, count in zip(unique, counts):
         # get all pixels in this class
-        class_mask = np.where(ground_truth == i, 1, 0)
+        mask = np.where(ground_truth == class_num, 1, 0)
+        examples = np.empty([count, bands])
+        x = 0
         # multiply the mask with the data
-        masked_data = np.multiply(data, class_mask)
+        for i in range(Xdim):
+            for j in range(Ydim):
+                if mask[i, j] == 1:
+                    examples[x] = data[i, j]
+                    x += 1
         # get the mean sig
-        mean_sig = np.sum(masked_data, axis=0) / np.array([count] * len(masked_data))
+        mean_sig = np.sum(examples, axis=0) / count
         # save it
         mean_signatures[class_num] = normalize(mean_sig)
     return mean_signatures
@@ -23,38 +31,53 @@ def ace_transform_samples(samples, labels, data, ground_truth):
     # get the mean sig
     mean_signatures = get_mean_signatures(data, ground_truth)
     # run each samples through all mean signatures
-    num_samples, Xdim, Ydim, bands = samples.shape
+    _, Xdim, Ydim, _ = samples.shape
+    
     num_classes = len(np.unique(ground_truth))
-    ace_samples = np.empty([num_samples, Xdim, Ydim, num_classes])
-
-    with tqdm(total=len(samples), desc="Running ACE") as pbar:
-        for i, samp in enumerate(samples):
-            ace_samp = np.empty([Xdim, Ydim, num_classes])
-            for j, mean_sig in enumerate(mean_signatures):
-                ace_samp[:,:, j] = ACE(samp, mean_sig)
-            ace_samples[i] = ace_samp
-            pbar.update(1)
-
+    
+    ace_samples = np.empty([1, Xdim, Ydim, num_classes])
+    task_list = list(ace_generator(samples, mean_signatures))
+    size = 5
+    with Pool(os.cpu_count()) as pool:
+        for ace_sample in tqdm(pool.imap(transform_sample, task_list, chunksize=size), total=len(task_list), desc="Running ACE"):
+            ace_sample = np.array([ace_sample])
+            ace_samples = np.concatenate((ace_samples, ace_sample), axis=0)
+        pool.close()
+        pool.join()
+    ace_samples = ace_samples[1:]
     return ace_samples
 
+def ace_generator(samples, mean_signatures):
+    for i in samples:
+        yield i, mean_signatures
 
-def ACE(data, s):
+def transform_sample(params):
+    sample, mean_signatures = params
+    Xdim, Ydim, _ = sample.shape
+    num_classes = len(mean_signatures)
+    ace_samp = np.empty([Xdim, Ydim, num_classes])
+    for j, mean_sig in enumerate(mean_signatures):
+        ace_samp[:,:, j] = ACE(sample, mean_sig)
+    return ace_samp
+
+
+
+def ACE(data, s, window_size = 3):
     """
     ACE Global Algorithm
     :param data: the data to run on
     :param s: the signal to match
     :return: the results of ace local
     """
-    window_size = int(input("Enter input window size: "))
     step = window_size // 2
-    print("Using window size of {}".format(window_size))
+   
     Xdim, Ydim, Bands = data.shape
     # calc valid values
     min_i = min_j = step
     max_i, max_j = Xdim - step - 1, Ydim - step - 1
 
     ace = np.zeros((Xdim,Ydim))
-    for i, row in tqdm(enumerate(data)):
+    for i, row in enumerate(data):
         if i not in range(min_i, max_i):
             continue
         for j, x in enumerate(row):
