@@ -62,6 +62,7 @@ def transform_sample(params):
     ace_samp = np.empty([Xdim, Ydim, num_classes])
     for j, mean_sig in enumerate(mean_signatures):
         ace_samp[:,:, j] = ACE(sample, mean_sig)
+        print("Finished for class {}".format(j))
     print("Finished a sample!")
     return ace_samp, label
 
