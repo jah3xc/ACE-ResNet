@@ -36,29 +36,34 @@ def ace_transform_samples(samples, labels, data, ground_truth):
     num_classes = len(np.unique(ground_truth))
     
     ace_samples = np.empty([1, Xdim, Ydim, num_classes])
-    task_list = list(ace_generator(samples, mean_signatures))
-    size = 1
+    task_list = list(ace_generator(samples, labels, mean_signatures))
+    size = len(task_list) // os.cpu_count()
+    labels = []
     with Pool(os.cpu_count()) as pool:
-        for ace_sample in tqdm(pool.imap(transform_sample, task_list, chunksize=size), total=len(task_list), desc="Running ACE"):
+        for result in tqdm(pool.imap_unordered(transform_sample, task_list, chunksize=size), total=len(task_list), desc="Running ACE"):
+            ace_sample, label = result
             ace_sample = np.array([ace_sample])
             ace_samples = np.concatenate((ace_samples, ace_sample), axis=0)
+            labels.append(label)
         pool.close()
         pool.join()
     ace_samples = ace_samples[1:]
+    labels = np.array(labels)
     return ace_samples
 
-def ace_generator(samples, mean_signatures):
-    for i in samples:
-        yield i, mean_signatures
+def ace_generator(samples, labels, mean_signatures):
+    for i,j in zip(samples, labels):
+        yield i, j, mean_signatures
 
 def transform_sample(params):
-    sample, mean_signatures = params
+    sample, label, mean_signatures = params
     Xdim, Ydim, _ = sample.shape
     num_classes = len(mean_signatures)
     ace_samp = np.empty([Xdim, Ydim, num_classes])
     for j, mean_sig in enumerate(mean_signatures):
         ace_samp[:,:, j] = ACE(sample, mean_sig)
-    return ace_samp
+    print("Finished a sample!")
+    return ace_samp, label
 
 
 
