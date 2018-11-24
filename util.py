@@ -59,7 +59,7 @@ def show_ace(ace, filename="ace.png"):
     # show to screen 
     show = input("Enter 0 for raw or 1 for scaled output: ")
     if int(show) not in (0,1):
-        print("Invalid Selection!")
+        raise ValueError("Invalid Selection!")
 
     img_data = deepcopy(ace)
 

@@ -41,17 +41,12 @@ def ace_transform_samples(samples, labels, data, ground_truth, cpu = os.cpu_coun
     task_list = list(ace_generator(samples, labels, mean_signatures))
     size = len(task_list) // os.cpu_count()
     labels = []
-    logger.info("Spawning Tasks")
-    with Pool(cpu) as pool:
-        logger.info("All tasks spawned!")
-        for result in tqdm(pool.imap_unordered(transform_sample, task_list, chunksize=size), total=len(task_list), desc="Running ACE"):
-            ace_sample, label = result
-            ace_sample = np.array([ace_sample])
-            ace_samples = np.concatenate((ace_samples, ace_sample), axis=0)
-            labels.append(label)
-        pool.close()
-        pool.join()
-    logger.info("Closed pool")
+    for t in tqdm(task_list, total=len(task_list), desc="Running ACE"):
+        result = transform_sample(t)
+        ace_sample, label = result
+        ace_sample = np.array([ace_sample])
+        ace_samples = np.concatenate((ace_samples, ace_sample), axis=0)
+        labels.append(label)
     ace_samples = ace_samples[1:]
     labels = np.array(labels)
     return ace_samples, labels

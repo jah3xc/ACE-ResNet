@@ -81,7 +81,6 @@ def train_model(samples, labels, window_size, build_args, train_args):
     ############
     # Train the Model
     ############
-    print(labels)
     train_results = model.fit(samples, labels, **train_args)
     json.dump(train_results.history, open("train_results.json", 'w'))
 
