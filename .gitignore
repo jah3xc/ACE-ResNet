@@ -8,3 +8,7 @@ __pycache__
 /paper/acenet-paper.synctex.gz
 /paper/acenet-paper.log
 /paper/acenet-paper.bbl
+/tmp.ipynb
+/train_results.json
+/.ipynb_checkpoints
+/.ipynb_checkpoints/tmp-checkpoint.ipynb
