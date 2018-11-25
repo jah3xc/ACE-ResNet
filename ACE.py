@@ -61,21 +61,37 @@ def transform_sample(params):
     Xdim, Ydim, _ = sample.shape
     num_classes = len(mean_signatures)
     ace_samp = np.empty([Xdim, Ydim, num_classes])
-    for j, mean_sig in enumerate(mean_signatures):
-        ace_samp[:,:, j] = ACE(sample, mean_sig)
-        logger.debug("Finished for class {}".format(j))
+
+    def gen2(sample, mean_signatures):
+        for i, j in enumerate(mean_signatures):
+            yield i, j, sample
+    
+    iterator = list(gen2(sample, mean_signatures))
+
+    try:
+        pool = Pool(num_classes)
+        
+        result = pool.map(ACE, iterator)
+        for item in result:
+            index, ace = item
+            ace_samp[index] = ace
+    finally:
+        pool.close()
+        pool.join()
+    
     logger.debug("Finished a sample!")
     return ace_samp, label
 
 
 
-def ACE(data, s, window_size = 3):
+def ACE(params):
     """
     ACE Global Algorithm
     :param data: the data to run on
     :param s: the signal to match
     :return: the results of ace local
     """
+    index, s, data = params
     step = window_size // 2
    
     Xdim, Ydim, Bands = data.shape
@@ -112,4 +128,4 @@ def ACE(data, s, window_size = 3):
             denominator = lowerl*lowerr
             # divide and store!
             ace[i,j] = numerator / denominator
-    return ace
+    return index, ace
