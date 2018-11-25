@@ -2,7 +2,7 @@ import scipy.io
 import numpy as np
 from copy import deepcopy
 from PIL import Image
-import keras
+# import keras
 import numpy as np
 import os
 from multiprocessing import Pool

@@ -3,7 +3,7 @@ import logging
 from util import load_mat
 from patches import extract_patches
 from pathlib import Path
-from cnn import train_model
+# from cnn import train_model
 from ACE import ace_transform_samples
 import json
 import os
@@ -39,12 +39,12 @@ def main():
         samples, labels = ace_transform_samples(samples, labels, data, ground_truth, cpu=cpu_count)
     
 
-    ###########
-    # Train the Network
-    ###########
-    trainParams = args["training"] if "training" in args else {}
-    buildParams = args["building"] if "building" in args else{}
-    model = train_model(samples, labels, window_size, buildParams, trainParams)
+    # ###########
+    # # Train the Network
+    # ###########
+    # trainParams = args["training"] if "training" in args else {}
+    # buildParams = args["building"] if "building" in args else{}
+    # model = train_model(samples, labels, window_size, buildParams, trainParams)
 
 
 def init():

@@ -1,7 +1,7 @@
 {
   "dataset": "data/Indian_pines.mat",
   "groundTruth": "data/Indian_pines_gt.mat",
-  "ace": false,
+  "ace": true,
   "windowSize": 5,
   "maxPatches": 500,
   "stride": 5,
