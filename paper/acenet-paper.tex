@@ -151,6 +151,23 @@ The results of this experiment are shown in Figure \ref{figure:noace}.
 	\end{subfigure}
 \end{figure*}
 
+
+
+\begin{figure*}
+	\label{figure:withace}
+	\centering
+	\caption{ACENet results on IP after 80/20 validation split using various window and stride sizes}
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\linewidth]{ace-enabled-loss.png}
+		\caption{Training Loss}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\linewidth]{ace-enabled-valacc.png}
+		\caption{Training Loss}		
+	\end{subfigure}
+\end{figure*}
+
 As Figure \ref{figure:noace} shows, the results of ACE Disabled HSI classification are not extraordinary.
 %
 The best validation accuracy is a measly 0.664, which occurs with a window size of 9 after 14 epochs of training.
