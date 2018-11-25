@@ -1,3 +1,5 @@
+import os
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
 import argparse
 import logging
 from util import load_mat
@@ -6,8 +8,6 @@ from pathlib import Path
 from cnn import train_model
 from ACE import ace_transform_samples
 import json
-import os
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
 def main():
     args = init()
