@@ -51,8 +51,8 @@ def extract_patches(data, ground_truth, window_size, stride, maxPatches = None):
                 patch = normalize_patch(patch)
                 patches = np.concatenate((patches, patch), axis=0)
                 labels.append(label)
-            pool.close()
-            pool.join()
+        pool.close()
+        pool.join()
     # throw away the first patch
     patches = patches[1:]
     # convert to numpy categorical
