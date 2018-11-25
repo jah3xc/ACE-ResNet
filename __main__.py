@@ -7,7 +7,7 @@ from cnn import train_model
 from ACE import ace_transform_samples
 import json
 import os
-os.environ["OPENBLAS_NUM_THREADS"] = 1
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
 def main():
     args = init()
