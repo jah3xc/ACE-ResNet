@@ -67,7 +67,7 @@ Each patch is then normalized between 0 and 1 and fed into ACENet.
 
 The ACENet architecture has two different modes: with or without ACE.
 %
-The only difference between the two is in the non-ACE mode, each patch is fed in raw and the input size to the first convolutional layer is (w x w x b) where w is the window size and b is the number of bands in the hyperspectral dataset.
+The only difference between the two is in the non-ACE mode, each patch is fed in raw and the input size to the first convolutional layer is $(w \times w \times b)$ where $w$ is the window size and $b$ is the number of bands in the hyperspectral dataset.
 %
 Meanwhile, the ACE mode has another step between preprocessing and the first convoutional layer known as the ACELayer.
 %
@@ -75,7 +75,16 @@ The ACELayer uses the dataset and ground truth to calculate a mean signal for ea
 %
 ACE is then run on each patch with each class's mean signal as the target signal. 
 %
-The resulting matrices are concatenated to form a single input sample with shape (w x w x n) where w is the window size and n is the number of classes, which is also the input shape of the first convolutional layer.
+The ACE algorithm is based upon the ACE equation:
+$$
+\text{ace}(x;(\mu,\Sigma)) = \frac{ \left[s^T \Sigma^{-1} x\right]^2 }{\left[s^T \Sigma^{-1} s\right] \left[x^T \Sigma^{-1} x\right]}
+$$
+%
+There are two forms of ACE: one that calculates $\mu$ and $\Sigma$ for the entire input signal, and one that calculates them for a window and then slides across the input signal.
+%
+For this project, the second form of ACE, known as ACE Local, is used, and the ACE window size is fixed at 3 due to the small input signals being only between 5x5 and 11x11.
+%
+The resulting matrices are concatenated to form a single input sample with shape $(w \times w \times n)$ where $w$ is the window size and $n$ is the number of classes, which is also the input shape of the first convolutional layer.
 %
 Both modes of ACENet have the same number of samples, but the ACE enabled mode has a reduction of dimensionality due to the number of classes being less than number of bands in HSI, but also has added computation of transforming samples from HSI pixels to the concatenation of ACE results.
 
@@ -132,48 +141,79 @@ To that end, I adjust the window size $w$ from 5x5 up to 11x11 in 2x2 increments
 %
 I set ACENet to run in ACE disabled mode, and use 15 convolutional layers and train for 100 epochs on 80\% of the data.
 %
-I use the remaining 20\% of as validation data.
-%
-The results of this experiment are shown in Figure \ref{figure:noace}.
+I use the remaining 20\% of validation data, and the results of this experiment are shown in Figure \ref{figure:noace}.
 
 \begin{figure*}
-	\label{figure:noace}
+
 	\centering
-	\caption{ACENet results on IP after 80/20 validation split using various window and stride sizes}
+	\caption{ACENet results on IP after 80/20 validation split using various window sizes}
+	\label{figure:noace}
 	\begin{subfigure}{0.45\linewidth}
 		\includegraphics[width=\linewidth]{ace-disabled-loss.png}
-		\caption{Training Loss}
+		\caption{ACE Disabled Training Loss}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{0.45\linewidth}
 		\includegraphics[width=\linewidth]{ace-disabled-valacc.png}
-		\caption{Training Loss}		
+		\caption{ACE Disabled Validation Accuracy}		
 	\end{subfigure}
-\end{figure*}
 
 
-
-\begin{figure*}
-	\label{figure:withace}
-	\centering
-	\caption{ACENet results on IP after 80/20 validation split using various window and stride sizes}
 	\begin{subfigure}{0.45\linewidth}
 		\includegraphics[width=\linewidth]{ace-enabled-loss.png}
-		\caption{Training Loss}
+		\caption{ACE Enabled Training Loss}
 	\end{subfigure}
 	\hfill
 	\begin{subfigure}{0.45\linewidth}
 		\includegraphics[width=\linewidth]{ace-enabled-valacc.png}
-		\caption{Training Loss}		
+		\caption{ACE Enabled Validation Accuracy}		
 	\end{subfigure}
 \end{figure*}
 
-As Figure \ref{figure:noace} shows, the results of ACE Disabled HSI classification are not extraordinary.
+
+The results of ACE Disabled HSI classification are not extraordinary.
 %
 The best validation accuracy is a measly 0.664, which occurs with a window size of 9 after 14 epochs of training.
 %
+The loss in ACE disabled classification is highly irregular, with loss spiking at various epochs.
+%
+The expected behavior of loss would be a smooth downward sloping curve, but instead we see several increases in loss between epochs of training.
+%
+The training loss' behavior is mirrored in the validation accuracy. 
+%
+I was hoping, even expecting, to see the validation accuracy slowly increase over epochs of training. 
+%
+However, the validation accuracy is jumpy and oscillating, without any standard behavior, which indicates a lack of network convergence.
+%
+This could perhaps be rectified with more training (more epochs) or a change of hyper-parameters.
+
+While the results show a lack fo convergence, they still show that the window size is an important factor in validation accuracy for CNN classification of HSI.
+%
+The loss drop seen for window size of 9 is the closest to regular of the four window sizes, and the highest loss throughout training was for window size 11.
+%
+The lack of drop in loss shows that the CNN is not learning the data in 100 epochs as the smaller window sizes, and this translates to the lowest validation accuracy for all 100 epochs.
+%
+Unfortunately, the direct relationship between training loss and validation accuracy breaks with window size of 5.
+%
+The best performing window size was 5, but the best window size in terms of training loss was 9. 
+%
+This result is confusing because with a window size of 5, the ratio of context to data is 25:1, but for window size of 9, that ratio is 81:1, more than 3x larger.
+
+After reviewing the results of ACE Enabled CNN classification, we see that the network is greatly impacted by window size.
+%
+We see a nearly fixed training loss and validation accuracy for the Window Size 11 experiment. 
+%
+This indicates that 11 is too high and has too much context.
+%
+The results also show that in regards to training loss, a window size of 9 is optimal, but for validation accuracy, the optimal window size is 5.
+%
+Overall, since for both ACE enabled and ACE disabled CNN, the best window size turned out to be 5, indicating that less context is better for CNN classification performance.
+
 
 \subsection{ACE Enabled vs. ACE Disabled}
+After reviewing previous experiment results and observing that the loss was minimized with a window size of 9 for both ACE Disabled and ACE Enabled, but also seeing that the networks were not diverging, I ran an experiment with the same parameters as the previous, except I trained the networks for 250 epochs, and I lowered the stride from $\lfloor\frac{w}{2}\rfloor = 4$ to 3, thus increasing training time, but also increasing the number of training samples. 
+%
+I ran this experiment with both ACE Enabled and ACE Disabled to see how the ACE approach altered validation accuracy. 
 \subsection{Ideal Network Size}
 
 %5) CONCLUSIONS. summarize it folks!
