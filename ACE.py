@@ -94,10 +94,11 @@ def ACE(params):
     index, s, data = params
     window_size = 3
     step = window_size // 2
+    logger = logging.getLogger(__name__)
    
     Xdim, Ydim, Bands = data.shape
     # calc valid values
-    min_i = min_j = step
+    min_i = min_j = step    
     max_i, max_j = Xdim - step - 1, Ydim - step - 1
 
     ace = np.zeros((Xdim,Ydim))
@@ -128,5 +129,6 @@ def ACE(params):
             lowerr = np.matmul( np.matmul(x-mu,sigma_inv), np.matrix.transpose(x-mu) )
             denominator = lowerl*lowerr
             # divide and store!
-            ace[i,j] = numerator / denominator
+            ace[i, j] = numerator / denominator
+    logger.debug("Finished class {}".format(index))
     return index, ace
