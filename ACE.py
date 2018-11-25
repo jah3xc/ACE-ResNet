@@ -92,6 +92,7 @@ def ACE(params):
     :return: the results of ace local
     """
     index, s, data = params
+    window_size = 3
     step = window_size // 2
    
     Xdim, Ydim, Bands = data.shape
