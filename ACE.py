@@ -41,7 +41,7 @@ def ace_transform_samples(samples, labels, data, ground_truth, cpu = os.cpu_coun
     task_list = list(ace_generator(samples, labels, mean_signatures))
     size = len(task_list) // os.cpu_count()
     labels = []
-    logger.info("Spawning Tasks")
+    logger.info("Spawning {} Tasks".format(cpu))
     with Pool(cpu) as pool:
         logger.info("All tasks spawned!")
         for result in tqdm(pool.imap_unordered(transform_sample, task_list, chunksize=size), total=len(task_list), desc="Running ACE"):
