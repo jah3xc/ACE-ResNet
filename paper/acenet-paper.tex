@@ -143,7 +143,7 @@ I set ACENet to run in ACE disabled mode, and use 15 convolutional layers and tr
 %
 I use the remaining 20\% of validation data, and the results of this experiment are shown in Figure \ref{figure:noace}.
 
-\begin{figure*}
+\begin{figure*}[t]
 
 	\centering
 	\caption{ACENet results on IP after 80/20 validation split using various window sizes}
@@ -211,6 +211,38 @@ Overall, since for both ACE enabled and ACE disabled CNN, the best window size t
 
 
 \subsection{ACE Enabled vs. ACE Disabled}
+
+
+\begin{figure*}[t]
+	
+	\centering
+	\caption{ACENet results on IP after 80/20 validation split with and without ACE Enabled}
+	\label{figure:acevnoace}
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\linewidth]{acevnoace-window5-loss.png}
+		\caption{Window Size 5 Training Loss}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\linewidth]{acevnoace-window5-valacc.png}
+		\caption{Window Size 5 Validation Accuracy}		
+	\end{subfigure}
+
+
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\linewidth]{acevnoace-window9-loss.png}
+		\caption{Window Size 9 Training Loss}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.45\linewidth}
+		\includegraphics[width=\linewidth]{acevnoace-window9-valacc.png}
+		\caption{Window Size 9 Validation Accuracy}		
+	\end{subfigure}
+	
+
+\end{figure*}
+
+
 After reviewing previous experiment results and observing that the loss was minimized with a window size of 9 for both ACE Disabled and ACE Enabled, but also seeing that the networks were not diverging, I ran an experiment with the same parameters as the previous, except I trained the networks for 250 epochs, and I lowered the stride from $\lfloor\frac{w}{2}\rfloor = 4$ to 3, thus increasing training time, but also increasing the number of training samples. 
 %
 I ran this experiment with both ACE Enabled and ACE Disabled to see how the ACE approach altered validation accuracy. 
