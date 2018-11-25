@@ -1,0 +1,19 @@
+{
+  "dataset": "data/Indian_pines.mat",
+  "groundTruth": "data/Indian_pines_gt.mat",
+  "ace": false,
+  "windowSize": 5,
+  "stride": 2,
+  "building": {
+    "num_layers": 15,
+    "num_filters": 16,
+    "kernel_size": 3,
+    "pooling_size": 2
+  },
+  "training": {
+    "batch_size": 32,
+    "epochs": 100,
+    "validation_split": 0.2,
+    "shuffle": true
+  }
+}
