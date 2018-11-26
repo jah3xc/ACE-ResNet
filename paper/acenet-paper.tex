@@ -246,7 +246,63 @@ Overall, since for both ACE enabled and ACE disabled CNN, the best window size t
 After reviewing previous experiment results and observing that the loss was minimized with a window size of 9 for both ACE Disabled and ACE Enabled, but also seeing that the networks were not diverging, I ran an experiment with the same parameters as the previous, except I trained the networks for 250 epochs, and I lowered the stride from $\lfloor\frac{w}{2}\rfloor = 4$ to 3, thus increasing training time, but also increasing the number of training samples. 
 %
 I ran this experiment with both ACE Enabled and ACE Disabled to see how the ACE approach altered validation accuracy. 
+%
+Because loss was minimized with window size 9, and validation accuracy was maximized with window size 5, I decided to run this experiment twice: once with window size 5 and once with window size 9.
+%
+The results of this experiment are shown in Figure \ref{figure:acevnoace}.
+
+When looking at the results of the second set of experiments, I see two common trends.
+%
+The first is that the NoACE experiments are overall better performing than the ACE experiments in general.
+%
+The loss of NoACE is lower than the loss of ACE and the validation accuracy is higher for NoACE than for ACE for the majority of epochs of training.
+%
+Recall that I chose to train for 250 epochs instead of 100 to allow the ACE experiments to converge, but I again see that ACE does not converge.
+%
+There is no asymptotic behavior of the loss function like I wanted to see.
+%
+In fact, the loss never changes past the 5th epoch for window size of 9, indicating that the network is not learning the provided data.
+%
+While overall I notice that NoACE performs better, the second trend I observe is that the ACE experiments are more consistent than the NoACE.
+%
+The NoACE experiments behave with a lot of oscillation, both in loss and validation accuracy, which means that while overall they perform better, I cannot put trust or credibility into seeing results after a given epoch because the numbers following the next epoch may not follow the trend.
+%
+The ACE Enabled experiments on the other hand generally had loss decrease (or remain the same) epoch over epoch and validation accuracy increase epoch over epoch. 
+%
+The results of this experiment show that ACE does not benefit CNN performance in HSI classification using my current method, but rather hinders it.
+%
+Perhaps using ACE Global on each patch with the mean signals would be perform better than using a window size of 3 in ACE Local.
+
 \subsection{Ideal Network Size}
+
+\begin{table*}[t]
+	
+	\centering
+	
+	\caption{CNN Performance with Varied Number of Convolutional Layers}
+	\label{table:cnn}
+	\begin{tabular}{l | c | c }
+		\textbf{No. Layers} & \textbf{ACE} & \textbf{NoACE} \\			
+		\hline	
+		1 & 0.5234 & 0.7357 \\
+		5 & 0.4163 & 0.7010 \\
+		15 & 0.5439 & 0.6306 \\
+		25 & & 0.4337 \\
+		50 & & 0.5184 \\
+		
+	\end{tabular}	
+	
+\end{table*}
+
+Following experiments to determine the utility of ACE Local on CNN classification performance and identify the optimal CNN input size, I decided to run an experiment to investigate the relationship between number of convolutional layers and CNN performance, both with and without ACE.
+%
+For this experiment, I choose to use an input window size of 5 with a stride of two based on previous experiments result.
+%
+I then hold everything else constant and consistent with previous experiments, and only vary the number of convolutional layers.
+%
+I vary this parameter from 1 up to 50, and train each network for 250 epochs.
+%
+The results of this experiment are shown in Table \ref{table:cnn}.
 
 %5) CONCLUSIONS. summarize it folks!
 \section{Conclusion}\label{sec:conclusion}
