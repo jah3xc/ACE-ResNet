@@ -304,6 +304,24 @@ I vary this parameter from 1 up to 50, and train each network for 250 epochs.
 %
 The results of this experiment are shown in Table \ref{table:cnn}.
 
+In reviewing the results of the ideal network size experiment, I see that the ideal network size is different with and without ACE.
+%
+Without ACE, the ideal network size is only 1 convolutional layer.
+%
+This result is surprising because HSI have more bands than RGB, but is not surprising for this dataset, as all classes are agricultural. 
+%
+I am not discriminating between airplanes and churches and roads, but instead on different agricultural features, so perhaps the features needed to classify these features can be extracted in 1 convolutional layer for this dataset.
+%
+With ACE enabled, we see that the ideal network size is 15. 
+%
+This indicates to me a kind of Goldilocks situation, where 1 is too few, 50 is too many, and 15 is in that "just right" range. 
+%
+These results also show that as the number of convolutional layers increase without ACE, the worse the classification results are, with the exception of 50 layers, which sees an increase over 25.
+%
+I also see that for a number of layers greater than or equal 25, ACE does outperform the NoACE mode, which is odd because the ACE mode has only 16 bands whereas NoACE has 220, so I expected more bands to need more convolution to extract the features more efficiently, but that is not the case.
+%
+The results show that the ACE data is more complex feature wise than the NoACE data, so the spectral information is harder to extract than the spatial information in the NoACE version, which is intuitive, but is also counterintuitive given the discrepancy in number of bands.
+
 %5) CONCLUSIONS. summarize it folks!
 \section{Conclusion}\label{sec:conclusion}
 
