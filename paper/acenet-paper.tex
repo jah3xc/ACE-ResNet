@@ -43,11 +43,11 @@ While numerous approaches have been taken for HSI classification, most technique
 %
 To that end, I will utilize a method of detection in HSI given sample object signatures, known as the Adaptive Cosine Estimator (ACE).
 %
-ACE allows detection and produces scoring at the pixel level within HSI given the signature of the objects of interest. 
+ACE produces a score for each pixel within HSI given the signature of the object of interest. 
 %
 In this project, I will combine the ACE technique with a CNN to produce a custom neural network architecture that involves preprocessing samples with ACE, named \textit{ACENet}.
 %
-ACENet combines the spectral classification methods of ACE with the spatial classification methods utilized by CNN to produce an architecture that can better classify HSI.
+ACENet combines the spectral classification methods of ACE with the spatial classification methods utilized by CNN to produce an architecture that better utilizes the spectral information within HSI.
 %
 More details of this new architecture are described in Section \ref{sec:methods}.
 %
@@ -61,7 +61,7 @@ To explore the effects of ACE on CNN Performance, I first move to introduce the 
 %
 Since most hyperspectral datasets are labeled at the pixel label, the first step of preprocessing is to extract patches from the dataset.
 %
-To do this, parameters of window size and stride are selected and then used to extract patches of size window size by window size, and then sliding a number of pixels defined by stride.
+To do this, parameters of window size and stride are chosen and then used to extract patches of the specified size, and then sliding a number of pixels defined by stride.
 %
 Each patch is then normalized between 0 and 1 and fed into ACENet.
 
@@ -73,32 +73,32 @@ Meanwhile, the ACE mode has another step between preprocessing and the first con
 %
 The ACELayer uses the dataset and ground truth to calculate a mean signal for each class in the dataset.
 %
-ACE is then run on each patch with each class's mean signal as the target signal. 
+Each patch is then run against the mean signature of every class in the dataset, and the results of this process are stacked to generate a single sample
 %
 The ACE algorithm is based upon the ACE equation:
 $$
 \text{ace}(x;(\mu,\Sigma)) = \frac{ \left[s^T \Sigma^{-1} x\right]^2 }{\left[s^T \Sigma^{-1} s\right] \left[x^T \Sigma^{-1} x\right]}
 $$
 %
-There are two forms of ACE: one that calculates $\mu$ and $\Sigma$ for the entire input signal, and one that calculates them for a window and then slides across the input signal.
+There are two common forms of ACE: one that calculates $\mu$ and $\Sigma$ for the entire input signal, and one that calculates them for a window and then slides across the input signal.
 %
 For this project, the second form of ACE, known as ACE Local, is used, and the ACE window size is fixed at 3 due to the small input signals being only between 5x5 and 11x11.
 %
-The resulting matrices are concatenated to form a single input sample with shape $(w \times w \times n)$ where $w$ is the window size and $n$ is the number of classes, which is also the input shape of the first convolutional layer.
+Following the ACE algorithm on each class, the resulting matrices are stacked to form a single input sample with shape $(w \times w \times n)$ where $w$ is the window size and $n$ is the number of classes, which is also the input shape of the first convolutional layer.
 %
-Both modes of ACENet have the same number of samples, but the ACE enabled mode has a reduction of dimensionality due to the number of classes being less than number of bands in HSI, but also has added computation of transforming samples from HSI pixels to the concatenation of ACE results.
+Both modes of ACENet have the same number of samples, but the ACE enabled mode has a reduction of dimensionality due to the number of classes being less than number of bands in HSI, but also has added computation of transforming samples from HSI pixels to the stack of ACE results.
 
-Both ACE enabled and ACE disabled modes of ACENet have identical architectures beginning at the first convolutional layer.
+Both ACE enabled and ACE disabled modes of ACENet have identical architectures from the first convolutional layer to the final output.
 %
 The framework developed for this architecture is parameterized to allow for an arbitrary number of convolutional layers so that an optimal setting may be found for a given dataset.
 %
-Following the final convolutional layer, there is a single Max Pooling layer that feeds into a flattening layer.
+After the final convolutional layer, there is a single Max Pooling layer that feeds into a flattening layer.
 %
 Now that all feature extraction is finished, the flattened features are fed into the first fully connected layer composed of 256 units.
 %
-Next, a 25\% dropout layer is added to increase generalizability and improve cross validation performance.
+Next, a 25\% dropout layer is added to increase generalizability and improve validation performance.
 %
-Another fully connected layer follows the dropout layer before the final softmax layer for classification.
+A second fully connected layer follows the dropout layer prior to the final softmax layer.
 
 
 
@@ -113,29 +113,33 @@ The dataset has shape of 144x144, and is one of few HSI datasets that has excell
 %
 Use of this dataset will allow for easy comparison of this method with other methods due to the high popularity of IP.
 %
-The IP dataset is distributed as MatLab files and has 16 agricultural classes within it.
+The IP dataset is distributed as MATLAB files and has 16 agricultural classes within it.
 
 %4) EXPERIMENTS and RESULTS. what did you run and what did you find. Yes, document, but I want to see your ANALYSIS!
 %
 \section{Experiments}\label{sec:experiments}
 
-In an effort to test the usability of ACENet, several experiments were run with several different parameters, both in ACE enabled and ACE disabled modes. 
+In an effort to test the usability of ACENet, several experiments are run with several different parameters, both in ACE enabled and ACE disabled modes. 
 %
-The first set of experiments were done to test how stride and window size affected validation testing of CNN on HSI in general, and then another was run to explore how those same two parameters affected results with ACE enabled.
+The first set of experiments are done to test how stride and window size affect validation testing of CNN on HSI in general, and then another is run to explore how those same two parameters affected results with ACE enabled.
+%
+Next, an experiment is run to investigate how validation accuracy is affected by the use of ACE.
 %
 After finding ideal sets of window and stride sizes and exploring how ACE enabled CNN perform against Non-ACE enabled CNN, I investigate what the optimal number of convolutional layers is for feature extraction in HSI imagery.
 %
 All experiments are run using the IP dataset and are run using a Keras/TensorFlow software stack on a server with 4 NVIDIA Tesla V100s and 80 logical processors.
 %
-Network parameters were held constant with an initial learning rate of 0.01 and decay of 1e-6 along with a momentum of 0.9 in a Stochastic Gradient Descent (SGD) optimizer and categorical cross entropy loss function.
+Network parameters were held constant with an initial learning rate of $0.01$ and decay of $1e\text{-}6$ along with a momentum of $0.9$ in a Stochastic Gradient Descent (SGD) optimizer and categorical cross entropy loss function.
 % 
 
 \subsection{Varied Window and Stride Sizes}
-Due to the pixel level labeling seen in the IP dataset and the necessity of CNN to have some NxN patch of input, it is a useful task to vary the input patch size and observe how that change impacts CNN performance. 
+Due to the pixel level labeling seen in the IP dataset and the necessity of CNN to have some NxNxM patch of input, it is a useful task to vary the input patch size and observe how that change impacts CNN performance. 
 %
 A balance must be struck between computational complexity and context around a pixel.
 %
-If the window size is too small, then there is not enough context, and performance is hindered, while a window size too large will result in more complex calculations with higher training times and may lead to a performance hit as well depending if the chosen size contains too much context relative to the labeled pixel.
+If the window size is too small, then there is not enough context, and performance is hindered, while a window size too large will result in more complex calculations with higher training times.
+%
+Additionally, a large window size may lead to a performance hit as well depending if the chosen size contains too much context relative to the labeled pixel.
 %
 To that end, I adjust the window size $w$ from 5x5 up to 11x11 in 2x2 increments, and set the stride for each experiment to $\lfloor\frac{w}{2}\rfloor$. 
 %
@@ -181,15 +185,15 @@ The expected behavior of loss would be a smooth downward sloping curve, but inst
 %
 The training loss' behavior is mirrored in the validation accuracy. 
 %
-I was hoping, even expecting, to see the validation accuracy slowly increase over epochs of training. 
+I was hoping to see the validation accuracy slowly increase over epochs of training. 
 %
 However, the validation accuracy is jumpy and oscillating, without any standard behavior, which indicates a lack of network convergence.
 %
 This could perhaps be rectified with more training (more epochs) or a change of hyper-parameters.
 
-While the results show a lack fo convergence, they still show that the window size is an important factor in validation accuracy for CNN classification of HSI.
+While the results show a lack of convergence, they still show that the window size is an important factor in validation accuracy for CNN classification of HSI.
 %
-The loss drop seen for window size of 9 is the closest to regular of the four window sizes, and the highest loss throughout training was for window size 11.
+The loss curve seen for window size of 9 is the closest to regular of the four window sizes, and the highest loss throughout training was for window size 11.
 %
 The lack of drop in loss shows that the CNN is not learning the data in 100 epochs as the smaller window sizes, and this translates to the lowest validation accuracy for all 100 epochs.
 %
@@ -243,17 +247,17 @@ Overall, since for both ACE enabled and ACE disabled CNN, the best window size t
 \end{figure*}
 
 
-After reviewing previous experiment results and observing that the loss was minimized with a window size of 9 for both ACE Disabled and ACE Enabled, but also seeing that the networks were not diverging, I ran an experiment with the same parameters as the previous, except I trained the networks for 250 epochs, and I lowered the stride from $\lfloor\frac{w}{2}\rfloor = 4$ to 3, thus increasing training time, but also increasing the number of training samples. 
+After reviewing previous experiment results and observing that the loss was minimized with a window size of 9 for both ACE Disabled and ACE Enabled, but also seeing that the networks were not converging, I ran an experiment with the same parameters as the previous, except I trained the networks for 250 epochs, and I lowered the stride from $\lfloor\frac{w}{2}\rfloor = 4$ to 3, thus increasing training time, but also increasing the number of training samples. 
 %
 I ran this experiment with both ACE Enabled and ACE Disabled to see how the ACE approach altered validation accuracy. 
 
-Because loss was minimized with window size 9, and validation accuracy was maximized with window size 5, I decided to run this experiment twice: once with window size 5 and once with window size 9.
+Because loss was minimized with window size 9, and validation accuracy was maximized with window size 5, I then decided to rerun this experiment with window size 5.
 %
 The results of this experiment are shown in Figure \ref{figure:acevnoace}.
 
 When looking at the results of the second set of experiments, I see two common trends.
 %
-The first is that the NoACE experiments are overall better performing than the ACE experiments in general.
+The first is that the NoACE experiments are better performing than the ACE experiments in general.
 %
 The loss of NoACE is lower than the loss of ACE and the validation accuracy is higher for NoACE than for ACE for the majority of epochs of training.
 %
@@ -347,7 +351,7 @@ For the benchmark Indian Pines hyperspectral dataset, the choice of too many con
 %
 The result of several experiments showed that following ACE, the features of spectral data were more complex and therefore when more epochs and more convolutional layers were used, an increase in performance was seen.
 %
-Continued research for this project would include the usage of different ACE window sizes as well as an investigation into how ACE Global performed rather than ACE local.
+Continued research for this project would include the usage of different ACE window sizes as well as an investigation into how ACE Global would perform rather than ACE local.
 %
 Further, an investigation into if the conclusions drawn here would hold for other hyperspectral datasets would be an important next step to ensure work here is not too specified for Indian Pines.
 %
