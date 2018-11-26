@@ -246,7 +246,7 @@ Overall, since for both ACE enabled and ACE disabled CNN, the best window size t
 After reviewing previous experiment results and observing that the loss was minimized with a window size of 9 for both ACE Disabled and ACE Enabled, but also seeing that the networks were not diverging, I ran an experiment with the same parameters as the previous, except I trained the networks for 250 epochs, and I lowered the stride from $\lfloor\frac{w}{2}\rfloor = 4$ to 3, thus increasing training time, but also increasing the number of training samples. 
 %
 I ran this experiment with both ACE Enabled and ACE Disabled to see how the ACE approach altered validation accuracy. 
-%
+
 Because loss was minimized with window size 9, and validation accuracy was maximized with window size 5, I decided to run this experiment twice: once with window size 5 and once with window size 9.
 %
 The results of this experiment are shown in Figure \ref{figure:acevnoace}.
@@ -294,6 +294,19 @@ Perhaps using ACE Global on each patch with the mean signals would be perform be
 	
 \end{table*}
 
+
+\begin{figure*}[t]
+	
+	\centering
+	\caption{Classification accuracy with various number of convolutional layers}
+	\label{figure:num-layers}
+	
+	\includegraphics[width=0.5\linewidth]{num-layers.png}
+	
+	
+	
+\end{figure*}
+
 Following experiments to determine the utility of ACE Local on CNN classification performance and identify the optimal CNN input size, I decided to run an experiment to investigate the relationship between number of convolutional layers and CNN performance, both with and without ACE.
 %
 For this experiment, I choose to use an input window size of 5 with a stride of two based on previous experiments result.
@@ -302,7 +315,7 @@ I then hold everything else constant and consistent with previous experiments, a
 %
 I vary this parameter from 1 up to 50, and train each network for 250 epochs.
 %
-The results of this experiment are shown in Table \ref{table:cnn}.
+The results of this experiment are shown in Table \ref{table:cnn} and Figure \ref{figure:num-layers}.
 
 In reviewing the results of the ideal network size experiment, I see that the ideal network size is different with and without ACE.
 %
@@ -324,12 +337,27 @@ The results show that the ACE data is more complex feature wise than the NoACE d
 
 %5) CONCLUSIONS. summarize it folks!
 \section{Conclusion}\label{sec:conclusion}
+In conclusion, the addition of ACE preprocessing to a Convolutional Neural Network for Hyperspectral Image classification did not benefit classification performance. 
+%
+In addition, the choice of window size is a key parameter for HSI classification, and too large of a window size will result in terrible classification performance due to the overwhelming amount of context. 
+%
+While window size is an important choice for HSI classification, an even more crucial decision is the number of convolutional layers.
+%
+For the benchmark Indian Pines hyperspectral dataset, the choice of too many convolutional layers reduced validation accuracy from 0.74 down to 0.43, a reduction of more than 30\% in classification accuracy.
+%
+The result of several experiments showed that following ACE, the features of spectral data were more complex and therefore when more epochs and more convolutional layers were used, an increase in performance was seen.
+%
+Continued research for this project would include the usage of different ACE window sizes as well as an investigation into how ACE Global performed rather than ACE local.
+%
+Further, an investigation into if the conclusions drawn here would hold for other hyperspectral datasets would be an important next step to ensure work here is not too specified for Indian Pines.
+%
+Overall, the use of ACE caused a decrease in classification performance when compared with a standard CNN, but additional parameter and training schemes could potentially flip the script if the correct configuration was found.
 
 
 %%%%%%%%%%%%%%%%
 %		 REFERENCES
 %%%%%%%%%%%%%%%%%
-\newpage
+
 \bibliography{refs} 
 \bibliographystyle{ieeetr}
 
