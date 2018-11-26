@@ -1,0 +1,19 @@
+{
+  "dataset": "/cgi/home/hurtja/ACENet/data/Indian_pines.mat",
+  "groundTruth": "/cgi/home/hurtja/ACENet/data/Indian_pines_gt.mat",
+  "ace": true,
+  "windowSize": 5,
+  "stride": 2,
+  "building": {
+    "num_layers": 50,
+    "num_filters": 16,
+    "kernel_size": 3,
+    "pooling_size": 2
+  },
+  "training": {
+    "batch_size": 32,
+    "epochs": 250,
+    "validation_split": 0.2,
+    "shuffle": true
+  }
+}
